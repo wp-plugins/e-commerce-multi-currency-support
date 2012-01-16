@@ -4,9 +4,10 @@ var $j = jQuery.noConflict();
 
 $j(function () {
     $j("#wpsc-mcs-widget-form select").change(function(){
-        $j("#wpsc-mcs-widget-form").submit();
-        console.log('test');
+        if (!$j("#wpsc-mcs-widget-form input[type=submit]").length)
+            $j("#wpsc-mcs-widget-form").submit();
+
     });
-    //$j("#checkout_total").html('test');
+
 });
 

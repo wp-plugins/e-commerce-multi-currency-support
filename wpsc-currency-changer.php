@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.1
+Version: 0.2
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
