@@ -16,6 +16,8 @@ e-Commerce Multi Currency support is a Add-on Currency Widget that allows your c
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+= 0.3 =
+- Base currency is selected by default in drop-down currency selector
 = 0.2 =
 - currency code can appear now in the selector drop-down
 - submit button can be switched on and off

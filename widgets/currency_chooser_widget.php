@@ -22,18 +22,29 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 		}
 		//Display Currency Info:
 		$sql ="SELECT * FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `visible`='1' ORDER BY `country` ASC";
-		//echo $sql;
+		//echo $_SESSION['wpsc_base_currency_code'];
 		$countries = $wpdb->get_results($sql, ARRAY_A);
 		$output .= '<form method="post" action="" id="wpsc-mcs-widget-form">';
 		$output .='<select name="currency_option" style="width:200px;">';
+        if (!isset($_SESSION['wpsc_base_currency_code']))
+        {
+            $currency_code = $wpdb->get_results("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
+            $local_currency_code = $currency_code[0]['code'];
+        }else{
+            $local_currency_code=$_SESSION['wpsc_base_currency_code'];
+        }
 			foreach($countries as $country){
                 $country_code = '';
                 if ($instance['show_code'] == 1) $country_code =" (".$country['code'].")";
+                $selected_code = '';
 				if($_SESSION['wpsc_currency_code'] == $country['id']){
-					$output .="<option selected='selected' value=".$country['id'].">".$country['country'].$country_code."</option>";
-				}else{
-					$output .="<option value=".$country['id'].">".$country['country'].$country_code."</option>";
-				}
+                    $selected_code = "selected='selected'";
+				}else {
+                    if ( $local_currency_code == $country['code'])
+                        $selected_code = "selected='selected'";
+                }
+				$output .="<option ".$selected_code." value=".$country['id'].">".$country['country'].$country_code."</option>";
+
 			}
 		$output .="</select><br />";
 		$output .='<input type="hidden" value="change_currency_country" class="button-primary" name="wpsc_admin_action" />';
