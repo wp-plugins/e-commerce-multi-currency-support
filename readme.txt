@@ -3,7 +3,7 @@ Contributors: Misha Beshkin and WPSC team - Dan Milward, Tom Howard, Jeffry Ghaz
 Tags: e-commerce, shop, cart, featured product,featured,sticky product, ecommerce, currency
 Requires at least: 2.9
 Tested up to: 3.1.1
-Stable tag: 0.4
+Stable tag: 0.4.1
 
 
 == Description ==
