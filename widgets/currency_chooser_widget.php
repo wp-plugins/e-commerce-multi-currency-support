@@ -8,8 +8,8 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 
 	function WPSC_Widget_Currency_Converter() {
 
-		$widget_ops = array('classname' => 'widget_wpsc_currency_chooser', 'description' => __('Product Currency Chooser Widget', 'wpsc'));
-		$this->WP_Widget('wpsc_currency', __('Currency Chooser','wpsc'), $widget_ops);
+		$widget_ops = array('classname' => 'widget_wpsc_currency_chooser', 'description' => __('Product Currency Chooser Widget', 'wpscmcs'));
+		$this->WP_Widget('wpsc_currency', __('Currency Chooser','wpscmcs'), $widget_ops);
 	}
 
 	function widget( $args, $instance ) {
@@ -33,14 +33,15 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
         }else{
             $local_currency_code=$_SESSION['wpsc_base_currency_code'];
         }
-			foreach($countries as $country){
+        	foreach($countries as $country){
                 $country_code = '';
                 if ($instance['show_code'] == 1) $country_code =" (".$country['code'].")";
                 $selected_code = '';
 				if($_SESSION['wpsc_currency_code'] == $country['id']){
                     $selected_code = "selected='selected'";
+                    
 				}else {
-                    if ( $local_currency_code == $country['code'])
+                    if ( !isset($_SESSION['wpsc_currency_code']) && $local_currency_code == $country['code'])
                         $selected_code = "selected='selected'";
                 }
 				$output .="<option ".$selected_code." value=".$country['id'].">".$country['country'].$country_code."</option>";
@@ -50,17 +51,17 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 		$output .='<input type="hidden" value="change_currency_country" class="button-primary" name="wpsc_admin_action" />';
 
         if($instance['show_reset'] == 1){
-			$output .='<input type="submit" value="'.__('Reset Price to ','wpsc').$_SESSION['wpsc_base_currency_code'].'"  name="reset" />';
+			$output .='<input type="submit" value="'.__('Reset Price to ','wpscmcs').$_SESSION['wpsc_base_currency_code'].'"  name="reset" />';
 		}
         if($instance['show_submit'] == 1){
-		    $output .='<input type="submit" value="'.__('Convert','wpsc').'" class="button-primary" name="submit" />';
+		    $output .='<input type="submit" value="'.__('Convert','wpscmcs').'" class="button-primary" name="submit" />';
         }
 		$output .='</form>';
 		if($instance['show_conversion'] == 1){
 			if($wpsc_cart->currency_conversion != 0 && $wpsc_cart->use_currency_converter){		
-				$output .='<p><strong>Base Currency:</strong> '.$_SESSION['wpsc_base_currency_code'].'</p>';
+				$output .='<p><strong>'.__("Base Currency",'wpscmcs').':</strong> '.$_SESSION['wpsc_base_currency_code'].'</p>';
 				if($wpsc_cart->selected_currency_code != ''){
-					$output .='<p><strong>Current Currency:</strong> '.$wpsc_cart->selected_currency_code.'</p>';
+					$output .='<p><strong>'.__("Current Currency",'wpscmcs').':</strong> '.$wpsc_cart->selected_currency_code.'</p>';
 				}
 				$output .='<p>1 '.$_SESSION['wpsc_base_currency_code'].' = '.$wpsc_cart->currency_conversion.' '.$wpsc_cart->selected_currency_code.'</p><br />';
 			}elseif($wpsc_cart->currency_conversion == 0 && $_SESSION['wpsc_currency_code'] != '' ){

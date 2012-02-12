@@ -19,10 +19,15 @@ msgstr ""
 "X-Poedit-SearchPath-0: .\n"
 "X-Textdomain-Support: yes"
 
-#: widgets/currency_chooser_widget.php:11
+#: wpsc-currency-changer.php:180
 #@ wpscmcs
-msgid "Product Currency Chooser Widget"
-msgstr "Виджет для выбора валюты"
+msgid "By clicking Make Purchase you will be redirected to the gateway, and the cart prices will be converted to the shops local currency"
+msgstr "Нажав Приобрести вы будете направлены на платежного оператора, все цены будут сконвертированы в валюту магазина, установленные по умолчанию"
+
+#: widgets/currency_chooser_widget.php:56
+#@ wpscmcs
+msgid "Convert"
+msgstr "Конвертировать"
 
 #: widgets/currency_chooser_widget.php:12
 #: widgets/currency_chooser_widget.php:18
@@ -31,15 +36,25 @@ msgstr "Виджет для выбора валюты"
 msgid "Currency Chooser"
 msgstr "Выбор валюты"
 
+#: widgets/currency_chooser_widget.php:11
+#@ wpscmcs
+msgid "Product Currency Chooser Widget"
+msgstr "Виджет для выбора валюты"
+
 #: widgets/currency_chooser_widget.php:53
 #@ wpscmcs
 msgid "Reset Price to "
 msgstr "Скинуть настройки на "
 
-#: widgets/currency_chooser_widget.php:56
+#: widgets/currency_chooser_widget.php:61
 #@ wpscmcs
-msgid "Convert"
-msgstr "Конвертировать"
+msgid "Base Currency"
+msgstr "Основная валюта"
+
+#: widgets/currency_chooser_widget.php:63
+#@ wpscmcs
+msgid "Current Currency"
+msgstr "Выбранная валюта"
 
 #: widgets/currency_chooser_widget.php:117
 #@ default
@@ -65,9 +80,4 @@ msgstr ""
 #@ default
 msgid "Show Submit Button:"
 msgstr ""
-
-#: wpsc-currency-changer.php:180
-#@ wpscmcs
-msgid "By clicking Make Purchase you will be redirected to the gateway, and the cart prices will be converted to the shops local currency"
-msgstr "Нажав Приобрести вы будете направлены на платежного оператора, все цены будут сконвертированы в валюту магазина, установленные по умолчанию"
 

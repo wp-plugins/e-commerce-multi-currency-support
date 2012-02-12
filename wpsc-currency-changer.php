@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.4.1
+Version: 0.4.2
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -177,7 +177,7 @@ function wpsc_display_fancy_currency_notification(){
 //	exit('<pre>'.print_r($wpsc_cart, true).'</pre>');
 	if($wpsc_cart->selected_currency_code != $_SESSION['wpsc_base_currency_code']){
 		$output .="<div id='wpsc_currency_notification'>";
-	    $output .= "<p>".__('By clicking Make Purchase you will be redirected to the gateway, and the cart prices will be converted to the shops local currency','wpsc')." ".$_SESSION['wpsc_base_currency_code'].'</p>';
+	    $output .= "<p>".__('By clicking Make Purchase you will be redirected to the gateway, and the cart prices will be converted to the shops local currency','wpscmcs')." ".$_SESSION['wpsc_base_currency_code'].'</p>';
 		$output .="</div>";
 		echo $output;
 	}
@@ -185,7 +185,7 @@ function wpsc_display_fancy_currency_notification(){
 function wpsc_add_currency_js_css(){
 	wp_enqueue_script('wpsc-multi-currency-support-js',WPSC_CURRENCY_URL.'/js-css/currency.js', array('jquery'), 'Wp-Currency-Support');
 	wp_enqueue_style( 'wpsc-multi-currency-support-css', WPSC_CURRENCY_URL.'/js-css/currency.css', false, '0.0', 'all');
-    load_plugin_textdomain( 'currency-changer', false, dirname( plugin_basename( __FILE__ ) ) . '/localization/' );
+    load_plugin_textdomain( 'wpscmcs', false, dirname( plugin_basename( __FILE__ ) ) . '/localization/' );
 }
 add_action('init','wpsc_add_currency_js_css', 11);
 add_action('wpsc_bottom_of_shopping_cart','wpsc_display_fancy_currency_notification');
