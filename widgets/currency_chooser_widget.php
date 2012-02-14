@@ -39,7 +39,7 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
                 $selected_code = '';
 				if($_SESSION['wpsc_currency_code'] == $country['id']){
                     $selected_code = "selected='selected'";
-                    
+
 				}else {
                     if ( !isset($_SESSION['wpsc_currency_code']) && $local_currency_code == $country['code'])
                         $selected_code = "selected='selected'";
