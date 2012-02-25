@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.4.3
+Version: 0.4.4
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -88,7 +88,7 @@ function wpsc_add_currency_code($total){
     $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total));
     $totalpre = (float)$totalpre1;
     $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
-	$total = preg_replace('/[A-Z$€]{3}/', $wpsc_cart->selected_currency_code, $total);
+	$total = preg_replace('/([A-Z]{3}|[$€])/', $wpsc_cart->selected_currency_code, $total);
     $total = str_replace($totalpre1, $total_converted , $total);
 
 
