@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.4.4
+Version: 0.4.5
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -84,17 +84,23 @@ function wpsc_add_currency_code($total){
        if ($wpsc_cart->selected_currency_code != '')
         {
             if($wpsc_cart->use_currency_converter){
-
-    $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total));
+            $total1 = $total;
+            if (preg_match('/<.*/',$total))
+            {
+                
+                $total1 = trim(preg_replace('/.*>(.*)<.*/',"$1",$total));
+                $total1 = preg_replace('/\&\#(036|8364)\;/','',$total1);
+            }
+    $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total1));
     $totalpre = (float)$totalpre1;
     $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
-	$total = preg_replace('/([A-Z]{3}|[$€])/', $wpsc_cart->selected_currency_code, $total);
+	$total = preg_replace('/([A-Z]{3}|[$€]|\&\#(036|8364)\;)/', $wpsc_cart->selected_currency_code, $total);
     $total = str_replace($totalpre1, $total_converted , $total);
 
 
            }
         }
-	return $total;//.$totalpre.$totalpre1.$total_converted;
+	return $total;
 }
 
 /**
