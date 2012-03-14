@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.4.5
+Version: 0.5
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -26,10 +26,10 @@ include_once('widgets/currency_chooser_widget.php');
 function load_wpsc_converter(){
 	global $wpsc_cart, $wpdb;
 	$wpsc_cart->use_currency_converter = true;
+	$data = get_option('ecom_currency_convert');
 
 // Get currency settings
-		//$currency_type = get_option( 'currency_type' );
-	$currency_code = $wpdb->get_results("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
+    $currency_code = $wpdb->get_results("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
 
     $local_currency_code = $currency_code[0]['code'];
 	$_SESSION['wpsc_base_currency_code'] = $local_currency_code;
@@ -43,18 +43,45 @@ function load_wpsc_converter(){
 		$foreign_currency_code = $local_currency_code;
 	}
 	$curr=new CURRENCYCONVERTER();
-	//if($foreign_currency_code != '' || $foreign_currency_code != $local_currency_code){
-		$wpsc_cart->currency_conversion = $curr->convert(1,$local_currency_code,$foreign_currency_code);
-      //  $_SESSION['wpsc_currency_conversion'] = $wpsc_cart->currency_conversion;
-	//}
-	foreach($wpsc_cart->cart_items as $item){
+
+		if ($data['currency_source']=="google")
+		    $wpsc_cart->currency_conversion = googleConvert($local_currency_code,$foreign_currency_code);
+		else
+		    $wpsc_cart->currency_conversion = $curr->convert(1,$local_currency_code,$foreign_currency_code);
+
+    foreach($wpsc_cart->cart_items as $item){
 		$item->refresh_item();
 	}
-//	exit('<pre>'.print_r($wpsc_cart, true).'</pre>');
 	$wpsc_cart->subtotal = null;
 	$wpsc_cart->total_price = null;
 	$wpsc_cart->total_tax = null;
 
+}
+        // this function is derived from the code provided by Techmug (http://www.techmug.com/ajax-currency-converter-with-google-api/)
+        function googleConvert ($local_currency_code,$foreign_currency_code) {
+//make string to be put in API
+$string = "1".$local_currency_code."=?".$foreign_currency_code;
+
+//Call Google API
+$google_url = "http://www.google.com/ig/calculator?hl=en&q=".$string;
+
+//Get and Store API results into a variable
+$result = utf8_encode(file_get_contents($google_url));
+
+//Explode result to convert into an array
+$result = explode('"', $result);
+
+//$converted_amount = explode(' ', $result[3]);
+$converted_amount = preg_replace('/(.*[0-9]).*/','$1',$result[3]);
+$conversion = preg_replace('/[^a-zA-Z0-9_ -\.]/s', '',$converted_amount);
+//$conversion =  utf8_decode($conversion);
+//$conversion = $conversion * $amount;
+$conversion = round($conversion, 2);
+
+//Make right hand side string
+$rhs = $conversion;
+//exit('<pre>'.$google_url."\n".print_r($converted_amount,true).' '.$conversion.'</pre>');
+        return $rhs;
 }
 
 /**
@@ -192,8 +219,10 @@ function wpsc_add_currency_js_css(){
 	wp_enqueue_script('wpsc-multi-currency-support-js',WPSC_CURRENCY_URL.'/js-css/currency.js', array('jquery'), 'Wp-Currency-Support');
 	wp_enqueue_style( 'wpsc-multi-currency-support-css', WPSC_CURRENCY_URL.'/js-css/currency.css', false, '0.0', 'all');
     load_plugin_textdomain( 'wpscmcs', false, dirname( plugin_basename( __FILE__ ) ) . '/localization/' );
+
 }
 add_action('init','wpsc_add_currency_js_css', 11);
+
 add_action('wpsc_bottom_of_shopping_cart','wpsc_display_fancy_currency_notification');
 add_action('wpsc_additional_sales_amount_info','wpsc_show_currency_price',10,1);
 add_action('wpsc_before_submit_checkout','wpsc_reset_prices');
@@ -201,4 +230,5 @@ add_action('wpsc_save_cart_item','wpsc_save_currency_info', 10, 2);
 //add_filter('wpsc_convert_total_shipping','wpsc_convert_price');
 //add_filter('wpsc_do_convert_price','wpsc_convert_price');
 add_filter('wpsc_currency_display', 'wpsc_add_currency_code');
+
 ?>
