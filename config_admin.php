@@ -21,7 +21,7 @@
      </div>
      <div style="width:400px;float:left;">
      <form method="post" >
-     <h2>Zmanim widget</h2>
+     <h2>e-Commerce currency convertion plugin</h2>
 
  	<!--<h3>Basic options</h3>-->
  	<?include "config.php";?>
