@@ -10,7 +10,8 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 
 		$widget_ops = array('classname' => 'widget_wpsc_currency_chooser', 'description' => __('Product Currency Chooser Widget', 'wpscmcs'));
 		$this->WP_Widget('wpsc_currency', __('Currency Chooser','wpscmcs'), $widget_ops);
-	}
+    }
+
 
 	function widget( $args, $instance ) {
 	  global $wpdb, $wpsc_theme_path,$wpsc_cart;
@@ -88,43 +89,49 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 
 	function form( $instance ) {
 	  global $wpdb;
-	    $title = esc_attr($instance['title']);
-	    $show_conversion =$instance['show_conversion'];
-	    $show_reset =$instance['show_reset'];
-	    $show_submit =$instance['show_submit'];
-	    $show_code =$instance['show_code'];
-        if ($show_code == 1) {
-            $show_code_check = 'checked="checked"';
-	    }else{
-   	    	$show_code_check = '';
-	    }
+       	    $title = esc_attr($instance['title']);
+       	    $show_conversion =$instance['show_conversion'];
+       	    $show_reset =$instance['show_reset'];
+       	    $show_submit =$instance['show_submit'];
+       	    $show_code =$instance['show_code'];
+               if ($show_code == 1) {
+                   $show_code_check = 'checked="checked"';
+       	    }else{
+          	    	$show_code_check = '';
+       	    }
 
-	    if($show_conversion == 1){
-	    	$checked = 'checked="checked"';
-	    }else{
-   	    	$checked = '';
-	    }
-	    if($show_reset == 1){
-	    	$show_reset_check = 'checked="checked"';
-	    }else{
-   	    	$show_reset_check = '';
-	    }
-        if($show_submit == 1){
-	    	$show_submit_check = 'checked="checked"';
-	    }else{
-   	    	$show_submit_check = '';
-	    }
-        ?>
-        <p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
-        <p><label for="<?php echo $this->get_field_id('show_conversion'); ?>"><?php _e('Show Conversion Rate:'); ?> <input  id="<?php echo $this->get_field_id('show_conversion'); ?>" name="<?php echo $this->get_field_name('show_conversion'); ?>" type="checkbox" value="1" <?php echo $checked; ?> /></label></p>
-        <p><label for="<?php echo $this->get_field_id('show_code'); ?>"><?php _e('Show currency code:'); ?> <input  id="<?php echo $this->get_field_id('show_code'); ?>" name="<?php echo $this->get_field_name('show_code'); ?>" type="checkbox" value="1" <?php echo $show_code_check; ?> /></label></p>
-        <p><label for="<?php echo $this->get_field_id('show_reset'); ?>"><?php _e('Show Reset Button:'); ?> <input  id="<?php echo $this->get_field_id('show_reset'); ?>" name="<?php echo $this->get_field_name('show_reset'); ?>" type="checkbox" value="1" <?php echo $show_reset_check; ?> /></label></p>
-        <p><label for="<?php echo $this->get_field_id('show_submit'); ?>"><?php _e('Show Submit Button:'); ?> <input  id="<?php echo $this->get_field_id('show_submit'); ?>" name="<?php echo $this->get_field_name('show_submit'); ?>" type="checkbox" value="1" <?php echo $show_submit_check; ?> /></label></p>
-        <?php
+       	    if($show_conversion == 1){
+       	    	$checked = 'checked="checked"';
+       	    }else{
+          	    	$checked = '';
+       	    }
+       	    if($show_reset == 1){
+       	    	$show_reset_check = 'checked="checked"';
+       	    }else{
+          	    	$show_reset_check = '';
+       	    }
+               if($show_submit == 1){
+       	    	$show_submit_check = 'checked="checked"';
+       	    }else{
+          	    	$show_submit_check = '';
+       	    }
+               ?>
+        <a href="options-general.php?page=e-commerce-multi-currency-support/config_admin.php">Advanced settings</a>
+               <p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_conversion'); ?>"><?php _e('Show Conversion Rate:'); ?> <input  id="<?php echo $this->get_field_id('show_conversion'); ?>" name="<?php echo $this->get_field_name('show_conversion'); ?>" type="checkbox" value="1" <?php echo $checked; ?> /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_code'); ?>"><?php _e('Show currency code:'); ?> <input  id="<?php echo $this->get_field_id('show_code'); ?>" name="<?php echo $this->get_field_name('show_code'); ?>" type="checkbox" value="1" <?php echo $show_code_check; ?> /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_reset'); ?>"><?php _e('Show Reset Button:'); ?> <input  id="<?php echo $this->get_field_id('show_reset'); ?>" name="<?php echo $this->get_field_name('show_reset'); ?>" type="checkbox" value="1" <?php echo $show_reset_check; ?> /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_submit'); ?>"><?php _e('Show Submit Button:'); ?> <input  id="<?php echo $this->get_field_id('show_submit'); ?>" name="<?php echo $this->get_field_name('show_submit'); ?>" type="checkbox" value="1" <?php echo $show_submit_check; ?> /></label></p>
+
+<?php
 	
 	}
-
+    function options_page () {
+		add_options_page('e-Commerce currency converter advanced options', 'e-Commerce currency converter', 8,"e-commerce-multi-currency-support/config_admin.php" );
+	}
 }
 
+
 add_action('widgets_init', create_function('', 'return register_widget("WPSC_Widget_Currency_Converter");'));
+add_action('admin_menu', array('WPSC_Widget_Currency_Converter', 'options_page'));
 ?>
