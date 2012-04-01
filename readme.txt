@@ -3,7 +3,7 @@ Contributors: Misha Beshkin and WPSC team - Dan Milward, Tom Howard, Jeffry Ghaz
 Tags: e-commerce, shop, cart, featured product,featured,sticky product, ecommerce, currency
 Requires at least: 2.9
 Tested up to: 3.1.1
-Stable tag: 0.5.2
+Stable tag: 0.6
 
 
 == Description ==
@@ -16,6 +16,8 @@ e-Commerce Multi Currency support is a Add-on Currency Widget that allows your c
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+= 0.6 =
+- reworked build-in mechanism for getting currency exchange data. Now you can select reworked WPSC method.
 = 0.5.2 =
 - added Great Britain pound symbol
 = 0.5 =

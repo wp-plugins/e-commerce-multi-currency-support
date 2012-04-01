@@ -116,6 +116,7 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
           	    	$show_submit_check = '';
        	    }
                ?>
+        <a href="options-general.php?page=e-commerce-multi-currency-support/config_admin.php">Advanced settings</a>
                <p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
                <p><label for="<?php echo $this->get_field_id('show_conversion'); ?>"><?php _e('Show Conversion Rate:'); ?> <input  id="<?php echo $this->get_field_id('show_conversion'); ?>" name="<?php echo $this->get_field_name('show_conversion'); ?>" type="checkbox" value="1" <?php echo $checked; ?> /></label></p>
                <p><label for="<?php echo $this->get_field_id('show_code'); ?>"><?php _e('Show currency code:'); ?> <input  id="<?php echo $this->get_field_id('show_code'); ?>" name="<?php echo $this->get_field_name('show_code'); ?>" type="checkbox" value="1" <?php echo $show_code_check; ?> /></label></p>

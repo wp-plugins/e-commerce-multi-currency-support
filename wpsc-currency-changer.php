@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.5.2
+Version: 0.6
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -46,6 +46,8 @@ function load_wpsc_converter(){
 
 		if ($data['currency_source']=="google")
 		    $wpsc_cart->currency_conversion = googleConvert($local_currency_code,$foreign_currency_code);
+        else if ($data['currency_source']=="wpsc_local")
+            $wpsc_cart->currency_conversion =convert_local(1,$local_currency_code,$foreign_currency_code);
 		else
 		    $wpsc_cart->currency_conversion = $curr->convert(1,$local_currency_code,$foreign_currency_code);
 
@@ -57,6 +59,32 @@ function load_wpsc_converter(){
 	$wpsc_cart->total_tax = null;
 
 }
+function convert_local($amt = NULL, $to = "", $from = "")
+		{
+			if ($amt == 0) {
+				return 0;
+			}
+			$count = 0;
+//exit('<pre>'.$result->nodeValue.'http://www.exchange-rates.org/converter/' . $to . '/' . $from . '/</pre>');
+
+			$dom = new DOMDocument();
+			do {
+				@$dom->loadHTML(file_get_contents('http://www.exchange-rates.org/converter/' . $to . '/' . $from . '/' . $amt));
+				$result = $dom->getElementById('ctl00_M_lblToAmount');
+				if ($result) {
+                    $conversion = preg_replace('/,/', '',$result->nodeValue);
+
+                    //exit('<pre>'.$result->nodeValue.$conversion.'</pre>');
+					return round($conversion, 2);
+				}
+				sleep(1);
+				$count++;
+			} while ($count < 10);
+
+			trigger_error('Unable to connect to currency conversion service', E_USER_ERROR);
+			return FALSE;
+		}
+
         // this function is derived from the code provided by Techmug (http://www.techmug.com/ajax-currency-converter-with-google-api/)
         function googleConvert ($local_currency_code,$foreign_currency_code) {
 //make string to be put in API
