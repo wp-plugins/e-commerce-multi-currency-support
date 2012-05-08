@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.6.1
+Version: 0.6.2
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -29,17 +29,24 @@ function load_wpsc_converter(){
 	$data = get_option('ecom_currency_convert');
 
 // Get currency settings
-    $currency_code = $wpdb->get_results("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
+    $currency_code = $wpdb->get_results("SELECT `code`,`isocode` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
 
     $local_currency_code = $currency_code[0]['code'];
+    $local_currency_isocode = $currency_code[0]['isocode'];
 	$_SESSION['wpsc_base_currency_code'] = $local_currency_code;
+	$_SESSION['wpsc_base_currency_isocode'] = $local_currency_isocode;
 	if(!isset($_POST['reset'])){
-		$foreign_currency_code = $wpdb->get_var("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1");
-		$_SESSION['wpsc_currency_code'] =$_POST['currency_option'];
-		$wpsc_cart->selected_currency_code = $foreign_currency_code;
+        $currency_code = $wpdb->get_results("SELECT `code`,`isocode` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1",ARRAY_A);
+        //$foreign_currency_code = $wpdb->get_var("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1");
+        $foreign_currency_code = $currency_code[0]['code'];
+        $foreign_currency_isocode = $currency_code[0]['isocode'];
+        $wpsc_cart->selected_currency_code = $foreign_currency_code;
+        $_SESSION['wpsc_base_currency_isocode'] = $foreign_currency_isocode;
+		$wpsc_cart->selected_currency_isocode = $foreign_currency_isocode;
 	}else{
 		$_SESSION['wpsc_currency_code'] =get_option('currency_type');
 		$wpsc_cart->selected_currency_code = $local_currency_code;
+        $_SESSION['wpsc_base_currency_isocode'] = $local_currency_isocode;
 		$foreign_currency_code = $local_currency_code;
 	}
 	$curr=new CURRENCYCONVERTER();
@@ -135,7 +142,7 @@ function wpsc_convert_price($price){
  * @return string country code, currency symbol and total price
  */
 function wpsc_add_currency_code($total){
-	global $wpsc_cart;
+	global $wpsc_cart, $wpdb, $wpsc_query;
        if ($wpsc_cart->selected_currency_code != '')
         {
             if($wpsc_cart->use_currency_converter){
@@ -146,14 +153,26 @@ function wpsc_add_currency_code($total){
                 $total1 = trim(preg_replace('/.*>(.*)<.*/',"$1",$total));
                 $total1 = preg_replace('/\&\#(036|8364)\;/','',$total1);
             }
-        $total_proto = trim(preg_replace("/([^0-9\\.,])/i", "",$total1));
-    $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total1));
-    $totalpre = (float)$totalpre1;
 
-    $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
-	$total = preg_replace('/([A-Z]{3}|[$€£]|\&\#(036|8364)\;)/', $wpsc_cart->selected_currency_code, $total);
-    $total = str_replace($total_proto, $total_converted , $total);
-//exit('<pre>'.$total.'</pre>');
+        $total_proto = trim(preg_replace("/([^0-9\\.,])/i", "",$total1));
+        $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total1));
+        $totalpre = (float)$totalpre1;
+
+        $results = get_product_meta(get_the_ID(),'currency',true);
+        if ( count( $results ) > 0 ) {
+		    foreach ( (array)$results as $isocode => $curr ) {
+                if ($isocode == $wpsc_cart->selected_currency_isocode)
+                {
+                    //$totalpre = $curr;
+                    break;
+                }
+            }
+        }
+
+        $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
+	    $total = preg_replace('/([A-Z]{3}|[$€£]|\&\#(036|8364)\;)/', $wpsc_cart->selected_currency_code, $total);
+        $total = str_replace($total_proto, $total_converted , $total);
+//exit('<pre>'.$totalpre.'</pre>');
 
            }
         }

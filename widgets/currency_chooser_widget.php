@@ -23,14 +23,15 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 		}
 		//Display Currency Info:
 		$sql ="SELECT * FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `visible`='1' ORDER BY `country` ASC";
-		//echo $_SESSION['wpsc_base_currency_code'];
+		//echo $_SESSION['wpsc_base_currency_isocode'];
 		$countries = $wpdb->get_results($sql, ARRAY_A);
 		$output .= '<form method="post" action="" id="wpsc-mcs-widget-form">';
 		$output .='<select name="currency_option" style="width:200px;">';
         if (!isset($_SESSION['wpsc_base_currency_code']))
         {
-            $currency_code = $wpdb->get_results("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
+            $currency_code = $wpdb->get_results("SELECT `code`,`isocode` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
             $local_currency_code = $currency_code[0]['code'];
+            $local_currency_isocode = $currency_code[0]['isocode'];
         }else{
             $local_currency_code=$_SESSION['wpsc_base_currency_code'];
         }
@@ -38,11 +39,11 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
                 $country_code = '';
                 if ($instance['show_code'] == 1) $country_code =" (".$country['code'].")";
                 $selected_code = '';
-				if($_SESSION['wpsc_currency_code'] == $country['id']){
+				if($_SESSION['wpsc_base_currency_isocode'] == $country['isocode']){
                     $selected_code = "selected='selected'";
 
 				}else {
-                    if ( !isset($_SESSION['wpsc_currency_code']) && $local_currency_code == $country['code'])
+                    if ( !isset($_SESSION['wpsc_base_currency_isocode']) && $local_currency_isocode == $country['isocode'])
                         $selected_code = "selected='selected'";
                 }
 				$output .="<option ".$selected_code." value=".$country['id'].">".$country['country'].$country_code."</option>";
