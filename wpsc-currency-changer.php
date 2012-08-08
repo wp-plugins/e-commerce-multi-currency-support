@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.6.2
+Version: 0.7
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -27,7 +27,7 @@ function load_wpsc_converter(){
 	global $wpsc_cart, $wpdb;
 	$wpsc_cart->use_currency_converter = true;
 	$data = get_option('ecom_currency_convert');
-
+        //print_r($data);
 // Get currency settings
     $currency_code = $wpdb->get_results("SELECT `code`,`isocode` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
 
@@ -36,11 +36,19 @@ function load_wpsc_converter(){
 	$_SESSION['wpsc_base_currency_code'] = $local_currency_code;
 	$_SESSION['wpsc_base_currency_isocode'] = $local_currency_isocode;
 	if(!isset($_POST['reset'])){
-        $currency_code = $wpdb->get_results("SELECT `code`,`isocode` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1",ARRAY_A);
+        $currency_code = $wpdb->get_results("SELECT `code`,`isocode`,`currency`,`symbol_html` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1",ARRAY_A);
         //$foreign_currency_code = $wpdb->get_var("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1");
-        $foreign_currency_code = $currency_code[0]['code'];
+        $foreign_currency_readable = $currency_code[0]['currency'];
+        $foreign_currency_symbol = $currency_code[0]['symbol_html'];
         $foreign_currency_isocode = $currency_code[0]['isocode'];
+        $foreign_currency_code = $currency_code[0]['code'];
         $wpsc_cart->selected_currency_code = $foreign_currency_code;
+
+        $wpsc_cart->selected_currency_readable = $foreign_currency_readable;
+        $wpsc_cart->selected_currency_readable_enabled = $data['show_code_readable'];
+        $wpsc_cart->selected_currency_symbol = $foreign_currency_symbol;
+        $wpsc_cart->selected_currency_symbol_enabled = $data['show_code_symbol'];
+
         $_SESSION['wpsc_base_currency_isocode'] = $foreign_currency_isocode;
 		$wpsc_cart->selected_currency_isocode = $foreign_currency_isocode;
 	}else{
@@ -170,9 +178,16 @@ function wpsc_add_currency_code($total){
         }
 
         $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
-	    $total = preg_replace('/([A-Z]{3}|[$€£]|\&\#(036|8364)\;)/', $wpsc_cart->selected_currency_code, $total);
+        $currency_display = $wpsc_cart->selected_currency_code;
+        if ($wpsc_cart->selected_currency_readable_enabled == 1)
+            $currency_display = $wpsc_cart->selected_currency_readable;
+        if ($wpsc_cart->selected_currency_symbol_enabled == 1)
+            if ($wpsc_cart->selected_currency_symbol!='')
+                $currency_display = $wpsc_cart->selected_currency_symbol;
+
+	    $total = preg_replace('/([A-Z]{3}|[$€£]|\&\#(036|8364)\;)/', $currency_display, $total);
         $total = str_replace($total_proto, $total_converted , $total);
-//exit('<pre>'.$totalpre.'</pre>');
+//exit('<pre>test1='.$wpsc_cart->selected_currency_readable_enabled.'</pre>');
 
            }
         }

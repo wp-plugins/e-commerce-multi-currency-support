@@ -16,6 +16,8 @@ e-Commerce Multi Currency support is a Add-on Currency Widget that allows your c
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+= 0.7 =
+- by request from Seedlab.net added possibility to display currency in readable way and symbol (if available). Check proper boxes in Widget settings.
 = 0.6.2 =
 - fixed defaulting to incorrect country in drop-down list.
 = 0.6.1 =

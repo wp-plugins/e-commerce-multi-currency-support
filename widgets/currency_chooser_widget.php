@@ -25,6 +25,7 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 		$sql ="SELECT * FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `visible`='1' ORDER BY `country` ASC";
 		//echo $_SESSION['wpsc_base_currency_isocode'];
 		$countries = $wpdb->get_results($sql, ARRAY_A);
+        //print_r($countries);
 		$output .= '<form method="post" action="" id="wpsc-mcs-widget-form">';
 		$output .='<select name="currency_option" style="width:200px;">';
         if (!isset($_SESSION['wpsc_base_currency_code']))
@@ -37,7 +38,17 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
         }
         	foreach($countries as $country){
                 $country_code = '';
-                if ($instance['show_code'] == 1) $country_code =" (".$country['code'].")";
+                if ($instance['show_code'] == 1)
+                {
+                    if ($instance['show_code_readable'] == 1)
+                        $country_code =" (".$country['currency'].")";
+                    else
+                        $country_code =" (".$country['code'].")";
+
+                    if ($instance['show_code_symbol']== 1)
+                        if ($country['symbol_html']!='')
+                            $country_code =" (".$country['symbol_html'].")";
+                }
                 $selected_code = '';
 				if($_SESSION['wpsc_base_currency_isocode'] == $country['isocode']){
                     $selected_code = "selected='selected'";
@@ -77,6 +88,7 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 	}
 
 	function update( $new_instance, $old_instance ) {
+        $data = get_option('ecom_currency_convert');
 		$instance = $old_instance;
 	//	exit('<pre>'.print_r($new_instance,true).'</pre>');
 		$instance['title'] = strip_tags($new_instance['title']);
@@ -84,7 +96,9 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 		$instance['show_reset'] = $new_instance['show_reset'];
 		$instance['show_submit'] = $new_instance['show_submit'];
 		$instance['show_code'] = $new_instance['show_code'];
-
+		$instance['show_code_readable'] = $new_instance['show_code_readable'];
+		$instance['show_code_symbol'] = $new_instance['show_code_symbol'];
+        update_option('ecom_currency_convert', array_merge($data,$instance));
 		return $instance;
 	}
 
@@ -99,6 +113,18 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
                    $show_code_check = 'checked="checked"';
        	    }else{
           	    	$show_code_check = '';
+       	    }
+            $show_code_readable =$instance['show_code_readable'];
+               if ($show_code_readable == 1) {
+                   $show_code_readable_check = 'checked="checked"';
+       	    }else{
+          	    	$show_code_readable_check = '';
+       	    }
+            $show_code_symbol =$instance['show_code_symbol'];
+               if ($show_code_symbol == 1) {
+                   $show_code_symbol_check = 'checked="checked"';
+       	    }else{
+          	    	$show_code_symbol_check = '';
        	    }
 
        	    if($show_conversion == 1){
@@ -118,12 +144,39 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
        	    }
                ?>
         <a href="options-general.php?page=e-commerce-multi-currency-support/config_admin.php">Advanced settings</a>
-               <p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?> <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
-               <p><label for="<?php echo $this->get_field_id('show_conversion'); ?>"><?php _e('Show Conversion Rate:'); ?> <input  id="<?php echo $this->get_field_id('show_conversion'); ?>" name="<?php echo $this->get_field_name('show_conversion'); ?>" type="checkbox" value="1" <?php echo $checked; ?> /></label></p>
-               <p><label for="<?php echo $this->get_field_id('show_code'); ?>"><?php _e('Show currency code:'); ?> <input  id="<?php echo $this->get_field_id('show_code'); ?>" name="<?php echo $this->get_field_name('show_code'); ?>" type="checkbox" value="1" <?php echo $show_code_check; ?> /></label></p>
-               <p><label for="<?php echo $this->get_field_id('show_reset'); ?>"><?php _e('Show Reset Button:'); ?> <input  id="<?php echo $this->get_field_id('show_reset'); ?>" name="<?php echo $this->get_field_name('show_reset'); ?>" type="checkbox" value="1" <?php echo $show_reset_check; ?> /></label></p>
-               <p><label for="<?php echo $this->get_field_id('show_submit'); ?>"><?php _e('Show Submit Button:'); ?> <input  id="<?php echo $this->get_field_id('show_submit'); ?>" name="<?php echo $this->get_field_name('show_submit'); ?>" type="checkbox" value="1" <?php echo $show_submit_check; ?> /></label></p>
-
+               <p><label for="<?php echo $this->get_field_id('title'); ?>"><?php _e('Title:'); ?>
+                   <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_conversion'); ?>"><?php _e('Show Conversion Rate:'); ?>
+                   <input  id="<?php echo $this->get_field_id('show_conversion'); ?>" name="<?php echo $this->get_field_name('show_conversion'); ?>" type="checkbox" value="1" <?php echo $checked; ?> /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_code'); ?>"><?php _e('Show currency code:'); ?>
+                   <input  id="<?php echo $this->get_field_id('show_code'); ?>" name="<?php echo $this->get_field_name('show_code'); ?>" type="checkbox" value="1" <?php echo $show_code_check; ?> /></label></p>
+               <p style="margin-left: 20px;"><label for="<?php echo $this->get_field_id('show_code_readable'); ?>">   <?php _e('Readable format:'); ?>
+                   <input disabled="disabled" id="<?php echo $this->get_field_id('show_code_readable'); ?>" name="<?php echo $this->get_field_name('show_code_readable'); ?>" type="checkbox" value="1" <?php echo $show_code_readable_check; ?> /></label></p>
+               <p style="margin-left: 20px;"><label for="<?php echo $this->get_field_id('show_code_symbol'); ?>">   <?php _e('Symbol (if possible):'); ?>
+                   <input disabled="disabled" id="<?php echo $this->get_field_id('show_code_symbol'); ?>" name="<?php echo $this->get_field_name('show_code_symbol'); ?>" type="checkbox" value="1" <?php echo $show_code_symbol_check; ?> /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_reset'); ?>"><?php _e('Show Reset Button:'); ?>
+                   <input  id="<?php echo $this->get_field_id('show_reset'); ?>" name="<?php echo $this->get_field_name('show_reset'); ?>" type="checkbox" value="1" <?php echo $show_reset_check; ?> /></label></p>
+               <p><label for="<?php echo $this->get_field_id('show_submit'); ?>"><?php _e('Show Submit Button:'); ?>
+                   <input  id="<?php echo $this->get_field_id('show_submit'); ?>" name="<?php echo $this->get_field_name('show_submit'); ?>" type="checkbox" value="1" <?php echo $show_submit_check; ?> /></label></p>
+<script type="text/javascript">
+jQuery(function() {
+    if (jQuery("#<?php echo $this->get_field_id('show_code'); ?>").is(':checked'))
+    {
+        jQuery("#<?php echo $this->get_field_id('show_code_readable'); ?>").removeAttr("disabled");
+        jQuery("#<?php echo $this->get_field_id('show_code_symbol'); ?>").removeAttr("disabled");
+    }
+    jQuery("#<?php echo $this->get_field_id('show_code'); ?>").click(function() {
+        if (jQuery("#<?php echo $this->get_field_id('show_code'); ?>").is(':checked'))
+        {
+            jQuery("#<?php echo $this->get_field_id('show_code_readable'); ?>").removeAttr("disabled");
+            jQuery("#<?php echo $this->get_field_id('show_code_symbol'); ?>").removeAttr("disabled");
+        }else{
+            jQuery("#<?php echo $this->get_field_id('show_code_readable'); ?>").attr("disabled", true);
+            jQuery("#<?php echo $this->get_field_id('show_code_symbol'); ?>").attr("disabled", true);
+        }
+    });
+});
+</script>
 <?php
 	
 	}
