@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.4.5
+Version: 0.7
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -26,35 +26,105 @@ include_once('widgets/currency_chooser_widget.php');
 function load_wpsc_converter(){
 	global $wpsc_cart, $wpdb;
 	$wpsc_cart->use_currency_converter = true;
-
+	$data = get_option('ecom_currency_convert');
+        //print_r($data);
 // Get currency settings
-		//$currency_type = get_option( 'currency_type' );
-	$currency_code = $wpdb->get_results("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
+    $currency_code = $wpdb->get_results("SELECT `code`,`isocode` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".get_option('currency_type')."' LIMIT 1",ARRAY_A);
 
     $local_currency_code = $currency_code[0]['code'];
+    $local_currency_isocode = $currency_code[0]['isocode'];
 	$_SESSION['wpsc_base_currency_code'] = $local_currency_code;
+	$_SESSION['wpsc_base_currency_isocode'] = $local_currency_isocode;
 	if(!isset($_POST['reset'])){
-		$foreign_currency_code = $wpdb->get_var("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1");
-		$_SESSION['wpsc_currency_code'] =$_POST['currency_option'];
-		$wpsc_cart->selected_currency_code = $foreign_currency_code;
+        $currency_code = $wpdb->get_results("SELECT `code`,`isocode`,`currency`,`symbol_html` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1",ARRAY_A);
+        //$foreign_currency_code = $wpdb->get_var("SELECT `code` FROM `".WPSC_TABLE_CURRENCY_LIST."` WHERE `id`='".$_POST['currency_option']."' LIMIT 1");
+        $foreign_currency_readable = $currency_code[0]['currency'];
+        $foreign_currency_symbol = $currency_code[0]['symbol_html'];
+        $foreign_currency_isocode = $currency_code[0]['isocode'];
+        $foreign_currency_code = $currency_code[0]['code'];
+        $wpsc_cart->selected_currency_code = $foreign_currency_code;
+
+        $wpsc_cart->selected_currency_readable = $foreign_currency_readable;
+        $wpsc_cart->selected_currency_readable_enabled = $data['show_code_readable'];
+        $wpsc_cart->selected_currency_symbol = $foreign_currency_symbol;
+        $wpsc_cart->selected_currency_symbol_enabled = $data['show_code_symbol'];
+
+        $_SESSION['wpsc_base_currency_isocode'] = $foreign_currency_isocode;
+		$wpsc_cart->selected_currency_isocode = $foreign_currency_isocode;
 	}else{
 		$_SESSION['wpsc_currency_code'] =get_option('currency_type');
 		$wpsc_cart->selected_currency_code = $local_currency_code;
+        $_SESSION['wpsc_base_currency_isocode'] = $local_currency_isocode;
 		$foreign_currency_code = $local_currency_code;
 	}
 	$curr=new CURRENCYCONVERTER();
-	//if($foreign_currency_code != '' || $foreign_currency_code != $local_currency_code){
-		$wpsc_cart->currency_conversion = $curr->convert(1,$local_currency_code,$foreign_currency_code);
-      //  $_SESSION['wpsc_currency_conversion'] = $wpsc_cart->currency_conversion;
-	//}
-	foreach($wpsc_cart->cart_items as $item){
+
+		if ($data['currency_source']=="google")
+		    $wpsc_cart->currency_conversion = googleConvert($local_currency_code,$foreign_currency_code);
+        else if ($data['currency_source']=="wpsc_local")
+            $wpsc_cart->currency_conversion =convert_local(1,$local_currency_code,$foreign_currency_code);
+		else
+		    $wpsc_cart->currency_conversion = $curr->convert(1,$local_currency_code,$foreign_currency_code);
+
+    foreach($wpsc_cart->cart_items as $item){
 		$item->refresh_item();
 	}
-//	exit('<pre>'.print_r($wpsc_cart, true).'</pre>');
 	$wpsc_cart->subtotal = null;
 	$wpsc_cart->total_price = null;
 	$wpsc_cart->total_tax = null;
 
+}
+function convert_local($amt = NULL, $to = "", $from = "")
+		{
+			if ($amt == 0) {
+				return 0;
+			}
+			$count = 0;
+//exit('<pre>'.$result->nodeValue.'http://www.exchange-rates.org/converter/' . $to . '/' . $from . '/</pre>');
+
+			$dom = new DOMDocument();
+			do {
+				@$dom->loadHTML(file_get_contents('http://www.exchange-rates.org/converter/' . $to . '/' . $from . '/' . $amt));
+				$result = $dom->getElementById('ctl00_M_lblToAmount');
+				if ($result) {
+                    $conversion = preg_replace('/,/', '',$result->nodeValue);
+
+                    //exit('<pre>'.$result->nodeValue.$conversion.'</pre>');
+					return round($conversion, 2);
+				}
+				sleep(1);
+				$count++;
+			} while ($count < 10);
+
+			trigger_error('Unable to connect to currency conversion service', E_USER_ERROR);
+			return FALSE;
+		}
+
+        // this function is derived from the code provided by Techmug (http://www.techmug.com/ajax-currency-converter-with-google-api/)
+        function googleConvert ($local_currency_code,$foreign_currency_code) {
+//make string to be put in API
+$string = "1".$local_currency_code."=?".$foreign_currency_code;
+
+//Call Google API
+$google_url = "http://www.google.com/ig/calculator?hl=en&q=".$string;
+
+//Get and Store API results into a variable
+$result = utf8_encode(file_get_contents($google_url));
+
+//Explode result to convert into an array
+$result = explode('"', $result);
+
+//$converted_amount = explode(' ', $result[3]);
+$converted_amount = preg_replace('/(.*[0-9]).*/','$1',$result[3]);
+$conversion = preg_replace('/[^a-zA-Z0-9_ -\.]/s', '',$converted_amount);
+//$conversion =  utf8_decode($conversion);
+//$conversion = $conversion * $amount;
+$conversion = round($conversion, 2);
+
+//Make right hand side string
+$rhs = $conversion;
+//exit('<pre>'.$google_url."\n".print_r($converted_amount,true).' '.$conversion.'</pre>');
+        return $rhs;
 }
 
 /**
@@ -80,7 +150,7 @@ function wpsc_convert_price($price){
  * @return string country code, currency symbol and total price
  */
 function wpsc_add_currency_code($total){
-	global $wpsc_cart;
+	global $wpsc_cart, $wpdb, $wpsc_query;
        if ($wpsc_cart->selected_currency_code != '')
         {
             if($wpsc_cart->use_currency_converter){
@@ -91,12 +161,33 @@ function wpsc_add_currency_code($total){
                 $total1 = trim(preg_replace('/.*>(.*)<.*/',"$1",$total));
                 $total1 = preg_replace('/\&\#(036|8364)\;/','',$total1);
             }
-    $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total1));
-    $totalpre = (float)$totalpre1;
-    $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
-	$total = preg_replace('/([A-Z]{3}|[$€]|\&\#(036|8364)\;)/', $wpsc_cart->selected_currency_code, $total);
-    $total = str_replace($totalpre1, $total_converted , $total);
 
+        $total_proto = trim(preg_replace("/([^0-9\\.,])/i", "",$total1));
+        $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total1));
+        $totalpre = (float)$totalpre1;
+
+        $results = get_product_meta(get_the_ID(),'currency',true);
+        if ( count( $results ) > 0 ) {
+		    foreach ( (array)$results as $isocode => $curr ) {
+                if ($isocode == $wpsc_cart->selected_currency_isocode)
+                {
+                    //$totalpre = $curr;
+                    break;
+                }
+            }
+        }
+
+        $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
+        $currency_display = $wpsc_cart->selected_currency_code;
+        if ($wpsc_cart->selected_currency_readable_enabled == 1)
+            $currency_display = $wpsc_cart->selected_currency_readable;
+        if ($wpsc_cart->selected_currency_symbol_enabled == 1)
+            if ($wpsc_cart->selected_currency_symbol!='')
+                $currency_display = $wpsc_cart->selected_currency_symbol;
+
+	    $total = preg_replace('/([A-Z]{3}|[$€£]|\&\#(036|8364)\;)/', $currency_display, $total);
+        $total = str_replace($total_proto, $total_converted , $total);
+//exit('<pre>test1='.$wpsc_cart->selected_currency_readable_enabled.'</pre>');
 
            }
         }
@@ -192,8 +283,10 @@ function wpsc_add_currency_js_css(){
 	wp_enqueue_script('wpsc-multi-currency-support-js',WPSC_CURRENCY_URL.'/js-css/currency.js', array('jquery'), 'Wp-Currency-Support');
 	wp_enqueue_style( 'wpsc-multi-currency-support-css', WPSC_CURRENCY_URL.'/js-css/currency.css', false, '0.0', 'all');
     load_plugin_textdomain( 'wpscmcs', false, dirname( plugin_basename( __FILE__ ) ) . '/localization/' );
+
 }
 add_action('init','wpsc_add_currency_js_css', 11);
+
 add_action('wpsc_bottom_of_shopping_cart','wpsc_display_fancy_currency_notification');
 add_action('wpsc_additional_sales_amount_info','wpsc_show_currency_price',10,1);
 add_action('wpsc_before_submit_checkout','wpsc_reset_prices');
@@ -201,4 +294,5 @@ add_action('wpsc_save_cart_item','wpsc_save_currency_info', 10, 2);
 //add_filter('wpsc_convert_total_shipping','wpsc_convert_price');
 //add_filter('wpsc_do_convert_price','wpsc_convert_price');
 add_filter('wpsc_currency_display', 'wpsc_add_currency_code');
+
 ?>
