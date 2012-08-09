@@ -57,7 +57,17 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
                     if ( !isset($_SESSION['wpsc_base_currency_isocode']) && $local_currency_isocode == $country['isocode'])
                         $selected_code = "selected='selected'";
                 }
-				$output .="<option ".$selected_code." value=".$country['id'].">".$country['country'].$country_code."</option>";
+                $output_value = $country['country'].$country_code;
+                if ($instance['hide_country_name'] == 1)
+                {
+                    $skip = false;
+                    $output_value = preg_replace("/[()]/","",$country_code);
+                    if (in_array($output_value, $only_code_ar))
+                        $skip = true;
+                    $only_code_ar[] = $output_value;
+                }
+                if (!$skip)
+				    $output .="<option ".$selected_code." value=".$country['id'].">".$output_value."</option>";
 
 			}
 		$output .="</select><br />";
@@ -95,6 +105,7 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
 		$instance['show_conversion'] = $new_instance['show_conversion'];
 		$instance['show_reset'] = $new_instance['show_reset'];
 		$instance['show_submit'] = $new_instance['show_submit'];
+		$instance['hide_country_name'] = $new_instance['hide_country_name'];
 		$instance['show_code'] = $new_instance['show_code'];
 		$instance['show_code_readable'] = $new_instance['show_code_readable'];
 		$instance['show_code_symbol'] = $new_instance['show_code_symbol'];
@@ -113,6 +124,12 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
                    $show_code_check = 'checked="checked"';
        	    }else{
           	    	$show_code_check = '';
+       	    }
+            $hide_country_name =$instance['hide_country_name'];
+               if ($hide_country_name == 1) {
+                   $hide_country_name_check = 'checked="checked"';
+       	    }else{
+          	    	$hide_country_name_check = '';
        	    }
             $show_code_readable =$instance['show_code_readable'];
                if ($show_code_readable == 1) {
@@ -148,6 +165,8 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
                    <input class="widefat" id="<?php echo $this->get_field_id('title'); ?>" name="<?php echo $this->get_field_name('title'); ?>" type="text" value="<?php echo $title; ?>" /></label></p>
                <p><label for="<?php echo $this->get_field_id('show_conversion'); ?>"><?php _e('Show Conversion Rate:'); ?>
                    <input  id="<?php echo $this->get_field_id('show_conversion'); ?>" name="<?php echo $this->get_field_name('show_conversion'); ?>" type="checkbox" value="1" <?php echo $checked; ?> /></label></p>
+               <p><label for="<?php echo $this->get_field_id('hide_country_name'); ?>"><?php _e('Hide country name:'); ?>
+                   <input  id="<?php echo $this->get_field_id('hide_country_name'); ?>" name="<?php echo $this->get_field_name('hide_country_name'); ?>" type="checkbox" value="1" <?php echo $hide_country_name_check; ?> /></label></p>
                <p><label for="<?php echo $this->get_field_id('show_code'); ?>"><?php _e('Show currency code:'); ?>
                    <input  id="<?php echo $this->get_field_id('show_code'); ?>" name="<?php echo $this->get_field_name('show_code'); ?>" type="checkbox" value="1" <?php echo $show_code_check; ?> /></label></p>
                <p style="margin-left: 20px;"><label for="<?php echo $this->get_field_id('show_code_readable'); ?>">   <?php _e('Readable format:'); ?>
@@ -173,6 +192,13 @@ jQuery(function() {
         }else{
             jQuery("#<?php echo $this->get_field_id('show_code_readable'); ?>").attr("disabled", true);
             jQuery("#<?php echo $this->get_field_id('show_code_symbol'); ?>").attr("disabled", true);
+        }
+    });
+    jQuery("#<?php echo $this->get_field_id('hide_country_name'); ?>").click(function() {
+        if (jQuery("#<?php echo $this->get_field_id('hide_country_name'); ?>").is(':checked'))
+        {
+            jQuery("#<?php echo $this->get_field_id('show_code'); ?>").attr("checked", true);
+
         }
     });
 });
