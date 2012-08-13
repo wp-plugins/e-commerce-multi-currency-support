@@ -2,8 +2,8 @@
 Contributors: Misha Beshkin and WPSC team - Dan Milward, Tom Howard, Jeffry Ghazally,
 Tags: e-commerce, shop, cart, featured product,featured,sticky product, ecommerce, currency
 Requires at least: 2.9
-Tested up to: 3.1.1
-Stable tag: 0.7.2
+Tested up to: 3.4.1
+Stable tag: 0.8
 
 
 == Description ==
@@ -16,6 +16,9 @@ e-Commerce Multi Currency support is a Add-on Currency Widget that allows your c
 2. Activate the plugin through the 'Plugins' menu in WordPress
 
 == Changelog ==
+= 0.8 =
+- by request from Prefix.com.au added possibility to change currency according to set currency value for each product.
+- fixed small warning issue with no-country display feature.
 = 0.7.2 =
 - added hide country name checkbox.
 = 0.7 =

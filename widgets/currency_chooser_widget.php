@@ -36,6 +36,7 @@ class WPSC_Widget_Currency_Converter extends WP_Widget {
         }else{
             $local_currency_code=$_SESSION['wpsc_base_currency_code'];
         }
+        $only_code_ar[] = "";
         	foreach($countries as $country){
                 $country_code = '';
                 if ($instance['show_code'] == 1)

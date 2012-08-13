@@ -3,7 +3,7 @@
 Plugin Name: e-Commerce Multi Currency Support
 Plugin URI: http://misha.beshkin.lv
 Description: A plugin that provides a currency converter tool integrated into the WordPress Shopping Cart. This is trunk from wp-e-commerce-multi-currency-magic plugin.
-Version: 0.7.2
+Version: 0.8
 Author: Misha Beshkin
 Author URI: http://misha.beshkin.lv
 */
@@ -65,6 +65,9 @@ function load_wpsc_converter(){
             $wpsc_cart->currency_conversion =convert_local(1,$local_currency_code,$foreign_currency_code);
 		else
 		    $wpsc_cart->currency_conversion = $curr->convert(1,$local_currency_code,$foreign_currency_code);
+
+    if (isset($data['currency_value']))
+        $wpsc_cart->currency_value = $data['currency_value'];
 
     foreach($wpsc_cart->cart_items as $item){
 		$item->refresh_item();
@@ -165,22 +168,24 @@ function wpsc_add_currency_code($total){
         $total_proto = trim(preg_replace("/([^0-9\\.,])/i", "",$total1));
         $totalpre1 = trim(preg_replace("/([^0-9\\.])/i", "",$total1));
         $totalpre = (float)$totalpre1;
-
-        $results = get_product_meta(get_the_ID(),'currency',true);
-        if ( count( $results ) > 0 ) {
-		    foreach ( (array)$results as $isocode => $curr ) {
-                if ($isocode == $wpsc_cart->selected_currency_isocode)
-                {
-                    //$totalpre = $curr;
-                    break;
+        $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
+        if ($wpsc_cart->currency_value == 1)
+        {
+            $results = get_product_meta(get_the_ID(),'currency',true);
+            if ( count( $results ) > 0 ) {
+                foreach ( (array)$results as $isocode => $curr ) {
+                    if ($isocode == $wpsc_cart->selected_currency_isocode)
+                    {
+                        $total_converted = $curr;
+                        break;
+                    }
                 }
             }
         }
 
-        $total_converted =  number_format($totalpre * $wpsc_cart->currency_conversion, 2, '.', '');
         $currency_display = $wpsc_cart->selected_currency_code;
         if ($wpsc_cart->selected_currency_readable_enabled == 1)
-            $currency_display = $wpsc_cart->selected_currency_readable;
+            $currency_display = $wpsc_cart->selected_currency_readable." ";
         if ($wpsc_cart->selected_currency_symbol_enabled == 1)
             if ($wpsc_cart->selected_currency_symbol!='')
                 $currency_display = $wpsc_cart->selected_currency_symbol;
